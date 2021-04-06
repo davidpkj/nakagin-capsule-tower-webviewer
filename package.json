@@ -1,0 +1,21 @@
+{
+  "name": "nakagin-capsule-tower-webviewer",
+  "version": "1.0.0",
+  "description": "A hobby project of recreating the Nakagin Capsule Tower as a 3D model to be viewed in the browser",
+  "scripts": {
+    "build": "webpack"
+  },
+  "author": "David Penkowoj",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "@types/cannon": "^0.1.5",
+    "@types/three": "^0.127.0",
+    "ts-loader": "^8.1.0",
+    "webpack": "^5.30.0",
+    "webpack-cli": "^4.6.0"
+  },
+  "dependencies": {
+    "cannon": "^0.6.2",
+    "three": "^0.127.0"
+  }
+}
