@@ -3,6 +3,8 @@ import { WEBGL } from "three/examples/jsm/WebGL";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 
+import { CollisionCaster } from "./collisionCaster";
+
 const clock: THREE.Clock = new THREE.Clock(true);
 const acceleration: number = 9.8;
 const speed: number = 50;
@@ -12,6 +14,7 @@ let controls: PointerLockControls, renderer: THREE.WebGLRenderer, camera: THREE.
 let movementDirection: Map<String, boolean> = new Map<String, boolean>();
 let direction = new THREE.Vector3();
 let velocity = new THREE.Vector3();
+let clips = [];
 
 const initialize = () => {
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -28,7 +31,6 @@ const initialize = () => {
   initializeStructures();
   initializeLighting();
   initializeViewer();
-  initializePhysics();
 
   render();
 }
@@ -48,11 +50,11 @@ const initializeBackground = () => {
 }
 
 const initializeStructures = () => {
-  const ground: THREE.Mesh = new THREE.Mesh(new THREE.PlaneGeometry(100, 100, 10, 10), new THREE.MeshPhongMaterial({ color: 0xDDDDDD, depthWrite: false }));
+  const ground: THREE.Mesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), new THREE.MeshPhongMaterial({ depthWrite: false, visible: false }));
   ground.rotation.x = - Math.PI / 2;
   ground.position.set(0, 0, 0);
   ground.receiveShadow = true;
-
+  clips.push(ground);
   scene.add(ground);
 
   const loader = new GLTFLoader();
@@ -60,25 +62,28 @@ const initializeStructures = () => {
 }
 
 const initializeLighting = () => {
-  const ambientLight: THREE.AmbientLight = new THREE.AmbientLight(0xFFFFFF);
+  const intensity: number = 1.5;
+  const ambientLight: THREE.AmbientLight = new THREE.AmbientLight(0xFFFFFF, intensity);
+  const hemilight: THREE.HemisphereLight = new THREE.HemisphereLight(0x5D6DFF, 0xD99D80, intensity);
+  const dirlight: THREE.DirectionalLight = new THREE.DirectionalLight(0xFFFFFF, intensity);
+  dirlight.position.set(5, 10, 2);
 
   scene.add(ambientLight);
+  scene.add(hemilight);
+  scene.add(dirlight);
+  scene.add(dirlight.target);
 }
 
 const initializeViewer = () => {
-  const fov = 60;
+  const fov = 45;
   const aspect = 1920 / 1080;
   camera = new THREE.PerspectiveCamera(fov, aspect);
   camera.position.set(0, 0, 0);
 
   controls = new PointerLockControls(camera, renderer.domElement);
-  controls.getObject().position.set(0, 10, 0);
+  controls.getObject().position.set(10, 1, 0);
 
   scene.add(controls.getObject());
-}
-
-const initializePhysics = () => {
-  // TODO: Implement
 }
 
 const applyMovement = (delta: number) => {
@@ -90,17 +95,25 @@ const applyMovement = (delta: number) => {
   velocity.x -= velocity.x * acceleration * delta;
   velocity.z -= velocity.z * acceleration * delta;
 
-  velocity.y -= acceleration * mass * delta;
-
   direction.z = Number(forward) - Number(backward);
   direction.x = Number(right) - Number(left);
   direction.normalize();
-
+ 
   if (forward || backward) velocity.z -= direction.z * speed * delta;
   if (left || right) velocity.x -= direction.x * speed * delta;
 
   controls.moveForward(- velocity.z * delta);
   controls.moveRight(- velocity.x * delta);
+}
+
+const applyPhysics = (delta) => {
+  const collision = new CollisionCaster(camera.position, 0.4, clips);
+
+  if (collision.down != 0) {
+    if (collision.down < 0.2) camera.position.setY(camera.position.y + 0.1);
+  } else {
+    camera.position.setY(camera.position.y - acceleration * delta);
+  }
 }
 
 const render = () => {
@@ -110,6 +123,7 @@ const render = () => {
 
   if (controls.isLocked) {
     applyMovement(delta);
+    applyPhysics(delta);
   }
 
   renderer.render(scene, camera);
