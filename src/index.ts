@@ -38,12 +38,12 @@ const initialize = () => {
 const initializeBackground = () => {
   const loader = new THREE.CubeTextureLoader();
   const texture = loader.load([
-    '../assets/skyright.png',
-    '../assets/skyleft.png',
-    '../assets/skytop.png',
-    '../assets/skybottom.png',
-    '../assets/skycenter.png',
-    '../assets/skyveryright.png',
+    '../assets/skybox/skyright.png',
+    '../assets/skybox/skyleft.png',
+    '../assets/skybox/skytop.png',
+    '../assets/skybox/skybottom.png',
+    '../assets/skybox/skycenter.png',
+    '../assets/skybox/skyveryright.png',
   ]);
 
   scene.background = texture;
@@ -62,7 +62,7 @@ const initializeStructures = () => {
 }
 
 const initializeLighting = () => {
-  const intensity: number = 1.5;
+  const intensity: number = 1;
   const ambientLight: THREE.AmbientLight = new THREE.AmbientLight(0xFFFFFF, intensity);
   const hemilight: THREE.HemisphereLight = new THREE.HemisphereLight(0x5D6DFF, 0xD99D80, intensity);
   const dirlight: THREE.DirectionalLight = new THREE.DirectionalLight(0xFFFFFF, intensity);
